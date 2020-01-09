@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=2222.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>学生列表页面</title>
+    <style type="text/css">
+        table th,tr {
+            text-align: center;
+        }
+        form {
+            text-align: center;
+        }
+    </style>
+    <link rel="stylesheet" href="/css/bootstrap/bootstrap.css">
+    <script src="/js/vue/vue.js"></script>
+    <script src="https://cdn.staticfile.org/vue-resource/1.5.1/vue-resource.min.js"></script>
+</head>
+<body>
+    <div class="container" id="app">
+        <div class="panel panel-default">
+        <!-- Default panel contents -->
+            <div class="panel-heading">学生列表</div>
+            <div class="panel-body">
+                <form class="form-inline">
+                    <div class="row">
+                        <div class="form-group col-lg-5" style="text-align: left">
+                            <input type="button" class="btn btn-success" value="增加" id="btn" @click="add()">
+                            <input type="button" class="btn btn-warning" value="修改" id="btn1" @click="edit()">
+                            <input type="button" class="btn btn-danger" value="删除" id="btn2" @click="del()">
+                            <input type="button" class="btn btn-info" value="导入EXCEL" id="btn3" @click="importExcel()">
+                            <input type="button" class="btn btn-info" value="导出EXCEL" id="btn4" @click="exportExcel()">
+                        </div>
+                        <div class="form-group col-lg-2">
+                            <label class="sr-only" for="name">姓名</label>
+                            <div class="input-group">
+                                <div class="input-group-addon">姓名</div>
+                                <input type="text" class="form-control" id="name" v-model="name">
+                            </div>
+                        </div>
+                        <div class="form-group col-lg-2">
+                            <div class="input-group">
+                                <div class="input-group-addon">班级</div>
+                                <select class="form-control" name="clazz" id="clazz" v-model="clazz">
+                                    <option value="">选择班级</option>
+                                    <option value="JAVA106">JAVA106</option>
+                                    <option value="JAVA108">JAVA108</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group col-lg-2">
+                            <div class="input-group">
+                                <div class="input-group-addon">性别</div>
+                                <select class="form-control" name="sex" id="sex" v-model="sex">
+                                    <option value="">选择性别</option>
+                                    <option value="男">男</option>
+                                    <option value="女">女</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group col-lg-1">
+                            <input type="button" class="btn btn-primary" value="搜索" id="btn_search" @click="search(currentPage = 1)">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <table class="table table-bordered table-striped table-hover">
+               <thead>
+                    <tr>
+                        <th></th>
+                       <!-- <th>序号</th>-->
+                        <th>姓名</th>
+                        <th>年龄</th>
+                        <th>班级</th>
+                        <th>性别</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="item in list" :key="item.id">
+                        <td>
+                            <input type="checkbox" :id="item.id" :value="item.id" v-model="selIds" @click="pickOne()">
+                        </td>
+                        <!--<td v-text="i"></td>-->
+                        <td>
+                            <a href="javascript:void(0);" @click="jumpDteail(item.id)">{{item.name}}</a>
+                        </td>
+                        <td v-text="item.age"></td>
+                        <td v-text="item.clazz"></td>
+                        <td v-text="item.sex"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div>
+            <nav aria-label="Page navigation" style="text-align: center" v-if="total > 0">
+                <ul class="pagination">
+                    <li>
+                        <a href="javascript:void(0);" @click="search(currentPage = 1)">
+                            <span aria-hidden="true">首页</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="javascript:void(0);" @click="search(currentPage =  currentPage > 1 ? currentPage -1 : 1)" >
+                            <span aria-hidden="true">上一页</span>
+                        </a>
+                    </li>
+                    <li v-if="currentPage > 3 && totalPage > 5">
+                        <a href="javascript:void(0);">
+                            <span aria-hidden="true">...</span>
+                        </a>
+                    </li>
+                    <li v-for="i in pageList" :key="i">
+                        <a href="#" :style="i == currentPage ? 'color:red': ''" @click="search(currentPage = i)">
+                            {{i}}
+                        </a>
+                    </li>
+                    <li>
+                        <a href="javascript:void(0);" v-if="currentPage < totalPage -2 && totalPage > 5">
+                            <span aria-hidden="true">...</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="javascript:void(0);" @click="search(currentPage = currentPage >= totalPage ? totalPage:currentPage + 1)">
+                            <span aria-hidden="true">下一页</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="javascript:void(0);" @click="search(currentPage = totalPage)">
+                            <span aria-hidden="true">末页</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</body>
+<script type="text/javascript">
+     var vm = new Vue({
+        el:'#app',
+        data:{
+            selIds:[],
+            name:"",
+            age:"",
+            clazz:"",
+            sex:"",
+            list:[],
+            currentPage:1,
+            total:1,
+            pageSize:1,
+            pageList:[],
+            totalPage:1
+        },
+        methods: {
+            add(){
+                window.location.href="/html/student/addStu.html";
+            },
+            del(){
+                if(this.selIds.length == 0){
+                    alert("请选择一个要删除的对象！");
+                    return;
+                }
+                var student = {
+                    id:this.selIds[0]
+                };
+                this.$http.post('http://localhost/student/delStu',student,{emulateJSON:true}).then(result=>{
+                    if(result.status == "200"){
+                        if(result.body.isOk == "ok"){
+                            alert("删除成功！");
+                            this.search();
+                        }
+                    }else{
+                        alert("系统出错，请联系管理员！");
+                    }
+                })
+            },
+            edit(){
+                if(this.selIds.length == 0){
+                    alert("请选择一个要修改的对象！");
+                    return;
+                }
+                window.location.href="/html/student/updateStu.html?id="+this.selIds[0];
+            },
+            search(){
+                var student = {
+                    name:this.name,
+                    sex:this.sex,
+                    clazz:this.clazz,
+                    currentPage:this.currentPage
+                };
+                this.$http.post('http://localhost/student/getStuList',student,{emulateJSON:false}).then(result=>{
+                    if(result.status == "200"){
+                        if(result.body.isOk == "ok"){
+                            this.list = result.body.list;
+                            this.name = result.body.student.name;
+                            this.sex = result.body.student.sex;
+                            this.clazz = result.body.student.clazz;
+                            this.currentPage = result.body.currentPage;
+                            this.total = result.body.total;
+                            this.pageSize = result.body.pageSize;
+                            this.pageList = [];
+                            this.paging();
+                        }
+                    }else{
+                        alert("系统出错，请联系管理员！");
+                    }
+                })
+            },
+            pickOne(){
+                //先触发事件，再渲染页面的。
+                //即只要数组中存在东西，删掉。
+                //v-model渲染页面时会重新添加。               
+                this.selIds.pop();
+            },
+            importExcel(){
+                window.location.href="/html/student/importExcel.html";
+            },
+            exportExcel(){
+                window.location.href="http://localhost/student/exportExcel?name="+this.name+"&clazz="+this.clazz+"&sex="+this.sex;
+            },
+            jumpDteail(obj){
+                window.location.href="/html/student/stuDetail.html?stuid="+obj;
+            },
+            paging(){
+                var currentPage = this.currentPage;
+                var pageSize = this.pageSize;
+                var total = this.total;
+                if(total == 0){
+                    return;
+                }
+                var totalPage = Math.ceil(total / pageSize);
+                this.totalPage = totalPage;
+                if(total / pageSize <= 5 ){
+                    for(var i = 1;i <= totalPage;i++){
+                        this.pageList[i-1] = i;
+                    }
+                }else{
+                    //若当前页小于等于3，直接显示前5条
+                    if(currentPage <= 3){
+                        for(var i = 1;i <= 5;i++){
+                            this.pageList[i-1] = i;
+                        }
+                    }
+                    //若当前页大于等于总页数-2，小于总页数if,直接显示后5页
+                    else if(currentPage <= totalPage && currentPage >= totalPage -2){
+                        for(var i = 1;i <= 5;i++){
+                            this.pageList[i-1] = totalPage - 5 + i;
+                        }
+                    }
+                    // 其他情况显示当前页-2到当期也加2.
+                    else{
+                        for(var i = 1;i <= 5;i++){
+                            this.pageList[i-1] = currentPage - 3 + i;
+                        }
+                    }
+                }
+            }
+        },
+         created() {
+             this.search();
+         }
+     })
+</script>
+</html>

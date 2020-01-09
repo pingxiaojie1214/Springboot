@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=2222.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>学生详情详情页面</title>
+    <style type="text/css">
+        .file_photo{
+            position: absolute;
+            border: 1px solid;
+            width: 163px;
+            height: 163px;
+            opacity: 0;
+            left:0;
+        }
+        #photo {
+            width: 165px;
+            height: 162px;
+        }
+    </style>
+    <link rel="stylesheet" href="/css/bootstrap/bootstrap.css">
+    <script src="/js/vue/vue.js"></script>
+    <script src="https://cdn.staticfile.org/vue-resource/1.5.1/vue-resource.min.js"></script>
+</head>
+<body>
+    <div class="container" id="app">
+        <div class="panel panel-default">
+        <!-- Default panel contents -->
+            <div class="panel-heading">学生信息详情</div>
+            <div class="panel-body">
+                <form class="form-inline" method="post" id="form" action="" enctype="multipart/form-data">
+                    <div class="row">
+                        <div class="form-group col-lg-5" style="text-align: left">
+                            <input type="button" class="btn btn-success" value="导出Word" id="btn2" @click="exportWord()" v-if="filepath != ''">
+                            <input type="button" class="btn btn-warning" value="返回" id="btn3" @click="back()">
+                        </div>
+                    </div>
+                    <br/>
+                    <table class="table table-bordered">
+                        <tbody>
+                            <tr>
+                                <td class="col-lg-2" style="text-align:right;vertical-align: middle">
+                                    照片：
+                                </td>
+                                <td colspan="3" class="col-lg-10" style="text-align:left;vertical-align: middle">
+                                    <img id="photo" src="/img/addpic.png" @click="trigger();" v-if="filepath == ''"/>
+                                    <input type="file" name="upload" id="upload" class="file_photo" @change="uploadpic($event);">
+                                    <input type="hidden" name="stuid" v-model="stuid">
+                                    <img id="pic" :src="filepath" style="width: 165px;height: 162px" v-if="filepath != ''"/>
+                                    <input type="button" class="btn btn-danger" value="删除" id="btn" @click="del()" v-if="filepath != ''" style="vertical-align: bottom">
+                                    <input type="button" class="btn btn-info" value="下载" id="btn1" @click="download()" v-if="filepath != ''" style="vertical-align: bottom">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="col-lg-2" style="text-align:right;vertical-align: middle">
+                                    姓名：
+                                </td>
+                                <td class="col-lg-4" style="text-align:left;vertical-align: middle">
+                                    {{name}}
+                                </td>
+                                <td class="col-lg-2" style="text-align:right;vertical-align: middle">
+                                    年龄：
+                                </td>
+                                <td class="col-lg-4" style="text-align:left;vertical-align: middle">
+                                    {{age}}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="col-lg-2" style="text-align:right;vertical-align: middle">
+                                    班级：
+                                </td>
+                                <td class="col-lg-4" style="text-align:left;vertical-align: middle">
+                                    {{clazz}}
+                                </td>
+                                <td class="col-lg-2" style="text-align:right;vertical-align: middle">
+                                    性别：
+                                </td>
+                                <td class="col-lg-4" style="text-align:left;vertical-align: middle">
+                                    {{sex}}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+<script type="text/javascript">
+     var vm = new Vue({
+        el:'#app',
+        data:{
+           name:"",
+           clazz:"",
+           sex:"",
+           age:"",
+           file:"",
+           stuid:"",
+           filepath:"",
+           fileId:""
+        },
+        methods: {
+            trigger(){
+                document.getElementById("upload").click();
+            },
+            uploadpic(event) {
+                var f= event.target.files; // (利用console.log输出看结构就知道如何处理档案资料)
+                if(f.length > 0){
+                    this.file = f[0].name;
+                }else{
+                    this.file = "";
+                }
+                this.importPic();
+            },
+            importPic(){
+                if(this.file == ""){
+                    alert("请选择要上传的图片！");
+                    return;
+                }
+                var first = this.file.lastIndexOf(".");//取到文件名开始到最后一个点的长度
+                var namelength = this.file.length;//取到文件名长度
+                var filesuffix = this.file.substring(first + 1, namelength );//截取获得后缀名
+                if(filesuffix != "png" && filesuffix != "jpeg" && filesuffix != "jpg"){
+                    alert("图片类型必须是jpeg,jpg,png中的一种！");
+                    return;
+                }
+                //  通过form表单的id获得form表单的对象（也就是把form表单转换成对象）
+                var uploadFile = new FormData(document.getElementById("form"));
+                this.$http.post('http://localhost/student/upload',uploadFile,{emulateJSON:true}).then(result=>{
+                    if(result.status == "200"){
+                        this.filepath = "http://localhost/imgs/"+result.body.filepath;
+                        this.fileId = result.body.fileId;
+                        //上传完成，需要清空文件，要不然重复的文件不能再次上传。
+                        document.getElementById("upload").value = "";
+                    }else{
+                        alert("系统出错，请联系管理员！");
+                    }
+                })
+            },
+            getUrlParm() {
+                var url = location.search; //获取url中"?"符后的字串
+                var parms = new Object();
+                if (url.indexOf("?") != -1) {
+                    var str = url.substr(1);
+                    strs = str.split("&");
+                    for(var i = 0; i < strs.length; i ++) {
+                        parms[strs[i].split("=")[0]]=unescape(strs[i].split("=")[1]);
+                    }
+                }
+                return parms;
+            },
+            del(){
+                var file = {
+                    fileId:this.fileId
+                };
+                this.$http.post('http://localhost/student/delImg',file,{emulateJSON:true}).then(result=>{
+                    if(result.status == "200"){
+                        if(result.body.isOk == "ok"){
+                            this.filepath = "";
+                            this.fileId = "";
+                            this.file= "";
+                        }
+                    }else{
+                        alert("系统出错，请联系管理员！");
+                    }
+                })
+            },
+            download(){
+                window.location.href="http://localhost/student/download?fileId="+this.fileId;
+            },
+            exportWord(){
+                window.location.href="http://localhost/student/exportWord?stuid="+this.stuid;
+            },
+            back(){
+                window.location.href="/html/student/stuList.html";
+            }
+        },
+         created() {
+             this.stuid = this.getUrlParm().stuid;
+             var student = {
+                 stuid:this.stuid
+             };
+             this.$http.post('http://localhost/student/getStu',student,{emulateJSON:true}).then(result=>{
+                 if(result.status == "200"){
+                     if(result.body.isOk == "ok"){
+                         this.name = result.body.student.name;
+                         this.age = result.body.student.age;
+                         this.sex = result.body.student.sex;
+                         this.clazz = result.body.student.clazz;
+                         if(result.body.attachment != "none"){
+                             this.filepath = "http://localhost/imgs/"+result.body.attachment.filepath;
+                             this.fileId = result.body.attachment.id;
+                         }
+                     }
+                 }else{
+                     alert("系统出错，请联系管理员！");
+                 }
+             })
+         }
+     })
+</script>
+</html>

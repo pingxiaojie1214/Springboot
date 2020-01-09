@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ping.student.mapper.AttachmentMapper" >
+  <resultMap id="BaseResultMap" type="com.ping.student.pojo.Attachment" >
+    <id column="ID" property="id" jdbcType="VARCHAR" />
+    <result column="FILENAME" property="filename" jdbcType="VARCHAR" />
+    <result column="FILEPATH" property="filepath" jdbcType="VARCHAR" />
+    <result column="STUID" property="stuid" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    ID, FILENAME, FILEPATH, STUID
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from T_ATTACHMENT
+    where ID = #{id,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    delete from T_ATTACHMENT
+    where ID = #{id,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.ping.student.pojo.Attachment" >
+    insert into T_ATTACHMENT (ID, FILENAME, FILEPATH, 
+      STUID)
+    values (#{id,jdbcType=VARCHAR}, #{filename,jdbcType=VARCHAR}, #{filepath,jdbcType=VARCHAR}, 
+      #{stuid,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.ping.student.pojo.Attachment" >
+    insert into T_ATTACHMENT
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        ID,
+      </if>
+      <if test="filename != null" >
+        FILENAME,
+      </if>
+      <if test="filepath != null" >
+        FILEPATH,
+      </if>
+      <if test="stuid != null" >
+        STUID,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="filename != null" >
+        #{filename,jdbcType=VARCHAR},
+      </if>
+      <if test="filepath != null" >
+        #{filepath,jdbcType=VARCHAR},
+      </if>
+      <if test="stuid != null" >
+        #{stuid,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.ping.student.pojo.Attachment" >
+    update T_ATTACHMENT
+    <set >
+      <if test="filename != null" >
+        FILENAME = #{filename,jdbcType=VARCHAR},
+      </if>
+      <if test="filepath != null" >
+        FILEPATH = #{filepath,jdbcType=VARCHAR},
+      </if>
+      <if test="stuid != null" >
+        STUID = #{stuid,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.ping.student.pojo.Attachment" >
+    update T_ATTACHMENT
+    set FILENAME = #{filename,jdbcType=VARCHAR},
+      FILEPATH = #{filepath,jdbcType=VARCHAR},
+      STUID = #{stuid,jdbcType=VARCHAR}
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+
+  <select id="selectByStuId" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select
+    <include refid="Base_Column_List" />
+    from T_ATTACHMENT
+    where STUID = #{stuid,jdbcType=VARCHAR}
+  </select>
+</mapper>

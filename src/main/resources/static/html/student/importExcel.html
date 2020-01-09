@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=2222.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>学生列表页面</title>
+    <style type="text/css">
+        table th,tr {
+            text-align: center;
+        }
+        form {
+            text-align: center;
+        }
+    </style>
+    <link rel="stylesheet" href="/css/bootstrap/bootstrap.css">
+    <script src="/js/vue/vue.js"></script>
+    <script src="https://cdn.staticfile.org/vue-resource/1.5.1/vue-resource.min.js"></script>
+</head>
+<body>
+    <div class="container" id="app">
+        <div class="panel panel-default">
+        <!-- Default panel contents -->
+            <div class="panel-heading">导入人员信息</div>
+            <div class="panel-body">
+                <div style="text-align: center">
+                    <a href="/tools/importStu.xls" style="text-decoration: none;color:red">点击下载模板</a>
+                </div>
+            </div>
+            <!-- Table -->
+            <form method="post" id="form" action="" enctype="multipart/form-data">
+                <table class="table table-bordered">
+                    <tbody>
+                        <tr>
+                            <td style="vertical-align: middle">导入的文件</td>
+                            <td style="vertical-align: middle">
+                                <input type="file" name="file" id="impExcel" @change="tirggerFile($event)">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <button type="button" id="importExcel" class="btn btn-default" @click="importExcel()">上传</button>
+                                <button type="button" id="btn" class="btn btn-default" @click="back()">返回</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </form>
+        </div>
+    </div>     
+</body>
+<script type="text/javascript">
+     var vm = new Vue({
+        el:'#app',
+        data:{
+            file:""
+        },
+        methods: {
+            importExcel(){
+                if(this.file == ""){
+                    alert("请选择要上传的excel文件！");
+                    return;
+                }
+                var first = this.file.lastIndexOf(".");//取到文件名开始到最后一个点的长度
+                var namelength = this.file.length;//取到文件名长度
+                var filesuffix = this.file.substring(first + 1, namelength );//截取获得后缀名
+                if(filesuffix != "xls" && filesuffix != "xlsx"){
+                    alert("只能上传excel文件！");
+                    return;
+                }
+                //	通过form表单的id获得form表单的对象（也就是把form表单转换成对象）
+                var uploadFile = new FormData(document.getElementById("form"));
+                this.$http.post('http://localhost/student/importExcel',uploadFile,{emulateJSON:true}).then(result=>{
+                    console.log(result);
+                    if(result.status == "200"){
+                        if(result.body.isOk == "ok"){
+                            alert("新增成功！");
+                            window.location.href="/html/student/stuList.html";
+                        }
+                        if(result.body.isOk == "unsuit"){
+                            alert("只能上传EXCEL类型的文件！")
+                        }
+                        if(result.body.isOk =="formatError"){
+                            alert("上传文件格式不正确,请下载模板,按模板样式上传！")
+                        }
+                        if(result.body.isOk =="no"){
+                            alert("系统出错，请联系管理员！")
+                        }
+                    }else{
+                        alert("系统出错，请联系管理员！");
+                    }
+                })
+            },
+            back(){
+                window.location.href="/html/student/stuList.html";
+            },
+            tirggerFile(event) {
+                var f= event.target.files; // (利用console.log输出看结构就知道如何处理档案资料)
+                if(f.length > 0){
+                    this.file = f[0].name;
+                }else{
+                    this.file = "";
+                }
+                console.log(this.file);
+            }
+        }
+     })
+</script>
+</html>

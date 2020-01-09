@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=2222.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>新增学生页面</title>
+    <style type="text/css">
+    </style>
+    <link rel="stylesheet" href="/css/bootstrap/bootstrap.css">
+    <script src="/js/vue/vue.js"></script>
+    <script src="https://cdn.staticfile.org/vue-resource/1.5.1/vue-resource.min.js"></script>
+</head>
+<body>
+<div class="container" id="app">
+    <div class="panel panel-default">
+        <!-- Default panel contents -->
+        <div class="panel-heading">修改学生</div>
+        <div class="panel-body">
+            <form class="form-inline">
+                <table class="table table-bordered">
+                    <tbody>
+                    <tr>
+                        <td class="col-lg-2" style="text-align:right;vertical-align: middle">
+                            姓名：
+                        </td>
+                        <td class="col-lg-4">
+                            <div class="form-group">
+                                <label class="sr-only" for="name">姓名</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="name" v-model="name">
+                                </div>
+                            </div>
+                        </td>
+                        <td class="col-lg-2" style="text-align:right;vertical-align: middle">
+                            年龄：
+                        </td>
+                        <td class="col-lg-4">
+                            <div class="form-group">
+                                <label class="sr-only" for="age">年龄</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="age" v-model="age">
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="col-lg-2" style="text-align:right;vertical-align: middle">
+                            班级：
+                        </td>
+                        <td class="col-lg-4">
+                            <div class="form-group">
+                                <div class="input-group">
+                                    <select class="form-control" name="clazz" id="clazz" v-model="clazz">
+                                        <option value="">请选择班级</option>
+                                        <option value="JAVA106">JAVA106</option>
+                                        <option value="JAVA108">JAVA108</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="col-lg-2" style="text-align:right;vertical-align: middle">
+                            性别：
+                        </td>
+                        <td class="col-lg-6">
+                            <div class="form-group">
+                                <div class="input-group">
+                                    <select class="form-control" name="sex" id="sex" v-model="sex">
+                                        <option value="">请选择性别</option>
+                                        <option value="男">男</option>
+                                        <option value="女">女</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="4" style="text-align: center">
+                            <div class="form-group">
+                                <input type="button" class="btn btn-success" value="修改" id="btn" @click="update()">
+                                <input type="button" class="btn btn-warning" value="返回" id="btn1" @click="back()">
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+<script type="text/javascript">
+    var vm = new Vue({
+        el:'#app',
+        data:{
+            id:"",
+            name:"",
+            age:"",
+            clazz:"",
+            sex:"",
+        },
+        methods: {
+            update(){
+                if(this.name.trim() == ""){
+                    alert("请填写姓名！");
+                    this.name = '';
+                    return;
+                }
+                if(this.age.trim() == ""){
+                    alert("请填写年龄！");
+                    this.id = '';
+                    return;
+                }
+                if(this.clazz.trim() == ""){
+                    alert("请选择班级！");
+                    return;
+                }
+                if(this.sex.trim() == ""){
+                    alert("请选择性别！");
+                    return;
+                }
+                var student = {
+                    id:this.id,
+                    name:this.name,
+                    age:this.age,
+                    clazz:this.clazz,
+                    sex:this.sex
+                }
+                this.$http.post('http://localhost/student/updateStu',student,{emulateJSON:false}).then(result=>{
+                    if(result.status == "200"){
+                        if(result.body.isOk == "ok"){
+                            alert("修改成功！");
+                            window.location.href="/html/student/stuList.html";
+                        }
+                    }else{
+                        alert("系统出错，请联系管理员！");
+                    }
+                })
+            },
+            back(){
+                window.location.href="/html/student/stuList.html"
+            },
+            getUrlParm() {
+                var url = location.search; //获取url中"?"符后的字串
+                var parms = new Object();
+                if (url.indexOf("?") != -1) {
+                    var str = url.substr(1);
+                    strs = str.split("&");
+                    for(var i = 0; i < strs.length; i ++) {
+                        parms[strs[i].split("=")[0]]=unescape(strs[i].split("=")[1]);
+                    }
+                }
+                return parms;
+            }
+        },
+        created() {
+            this.id = this.getUrlParm().id;
+            var student = {
+                id:this.id
+            };
+            this.$http.post('http://localhost/student/editStu',student,{emulateJSON:true}).then(result=>{
+                if(result.status == "200"){
+                    if(result.body.isOk == "ok"){
+                        console.log(result.body);
+                        this.name = result.body.student.name;
+                        this.age = result.body.student.age;
+                        this.sex = result.body.student.sex;
+                        this.clazz = result.body.student.clazz;
+                    }
+                }else{
+                    alert("系统出错，请联系管理员！");
+                }
+            })
+        }
+    })
+</script>
+</html>

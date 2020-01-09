@@ -1,0 +1,26 @@
+server:
+  tomcat:
+    uri-encoding: UTF-8
+  port: 80
+#oracle database  jdbc
+spring:
+  datasource:
+    url: jdbc:oracle:thin:@//localhost:1521/orcl
+    #url: jdbc:oracle:thin:@//61.155.85.74:152/orcl
+    username: PXJ
+    password: 1
+    driver-class-name: oracle.jdbc.OracleDriver
+    max-idle: 10
+    max-active: 50
+    max-wait: 10000
+    initial-size: 5
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.ping.student.pojo
+logging:
+  level:
+    com.ping.student.mapper: debug #日志级别
+#文件上传路径
+attachment-path: E:\img\
+word-path: E:\ftl
+
