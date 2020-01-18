@@ -19,7 +19,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebConfigurer implements WebMvcConfigurer {
 
     @Value("${attachment-path}")
-    private  String attachment_path;
+    private  String attachment_path;//上传图片的路径
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
